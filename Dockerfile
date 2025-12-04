@@ -2,17 +2,21 @@
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-COPY pom.xml .
+# Copy Maven wrapper and config
 COPY mvnw .
 COPY .mvn .mvn
-
 RUN chmod +x mvnw
-RUN ./mvnw dependency:go-offline -B
+
+# Copy project files
+COPY pom.xml .
+RUN ./mvnw -B dependency:go-offline
 
 COPY src src
-RUN ./mvnw package -DskipTests -B
 
-# ---------- RUN STAGE ----------
+# Build Spring Boot application
+RUN ./mvnw -B package -DskipTests
+
+# ---------- RUNTIME STAGE ----------
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 
