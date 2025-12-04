@@ -4,13 +4,17 @@ WORKDIR /app
 
 # Copy Maven wrapper and config
 COPY mvnw .
-COPY .mvn .mvn
+# Convert Windows CRLF → Linux LF inside Docker
+RUN sed -i 's/\r$//' mvnw
 RUN chmod +x mvnw
 
-# Copy project files
+COPY .mvn .mvn
+
+# Copy pom.xml first (better caching)
 COPY pom.xml .
 RUN ./mvnw -B dependency:go-offline
 
+# Copy source code
 COPY src src
 
 # Build Spring Boot application
